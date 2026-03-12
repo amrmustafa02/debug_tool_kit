@@ -9,7 +9,7 @@ import 'package:debug_toolkit/src/presentation/tabs/system_tab/system_info_view.
 import 'package:debug_toolkit/src/presentation/tabs/variables_tab/variables_list_view.dart';
 import 'package:flutter/material.dart';
 
-class DebugPanelScreen extends StatelessWidget {
+class DebugPanelScreen extends StatefulWidget {
   final NetworkManager networkManager;
   final LogManager logManager;
   final SystemInfoCollector systemInfoCollector;
@@ -26,15 +26,59 @@ class DebugPanelScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final hasVariables = variableInspector != null;
-    final tabs = <_TabData>[
+  State<DebugPanelScreen> createState() => _DebugPanelScreenState();
+}
+
+class _DebugPanelScreenState extends State<DebugPanelScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late List<_TabData> _tabs;
+
+  // Track which tab indices support clearing
+  // 0 = Network, 1 = Logs
+  static const _networkTabIndex = 0;
+  static const _logsTabIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    final hasVariables = widget.variableInspector != null;
+    _tabs = [
       _TabData(icon: Icons.wifi, label: 'Network'),
       _TabData(icon: Icons.article, label: 'Logs'),
-      if (hasVariables) _TabData(icon: Icons.data_object, label: 'Variables'),
+      if (hasVariables)
+        _TabData(icon: Icons.data_object, label: 'Variables'),
       _TabData(icon: Icons.info_outline, label: 'System'),
-      ...extraTools.map((t) => _TabData(icon: t.icon, label: t.name)),
+      ...widget.extraTools
+          .map((t) => _TabData(icon: t.icon, label: t.name)),
     ];
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  bool get _canClearCurrentTab {
+    final index = _tabController.index;
+    return index == _networkTabIndex || index == _logsTabIndex;
+  }
+
+  void _clearCurrentTab() {
+    final index = _tabController.index;
+    if (index == _networkTabIndex) {
+      widget.networkManager.clear();
+    } else if (index == _logsTabIndex) {
+      widget.logManager.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasVariables = widget.variableInspector != null;
 
     return Theme(
       data: ThemeData.dark().copyWith(
@@ -49,28 +93,37 @@ class DebugPanelScreen extends StatelessWidget {
           indicatorColor: Colors.blue,
         ),
       ),
-      child: DefaultTabController(
-        length: tabs.length,
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Debug Panel', style: TextStyle(fontSize: 16)),
-            bottom: TabBar(
-              isScrollable: tabs.length > 4,
-              tabs: tabs
-                  .map((t) => Tab(icon: Icon(t.icon, size: 18), text: t.label))
-                  .toList(),
-            ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Debug Panel', style: TextStyle(fontSize: 16)),
+          actions: [
+            if (_canClearCurrentTab)
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                tooltip: 'Clear ${_tabs[_tabController.index].label}',
+                color: Colors.red,
+                onPressed: _clearCurrentTab,
+              ),
+          ],
+          bottom: TabBar(
+            controller: _tabController,
+            isScrollable: _tabs.length > 4,
+            tabs: _tabs
+                .map((t) =>
+                    Tab(icon: Icon(t.icon, size: 18), text: t.label))
+                .toList(),
           ),
-          body: TabBarView(
-            children: [
-              NetworkListView(networkManager: networkManager),
-              LogsListView(logManager: logManager),
-              if (hasVariables)
-                VariablesListView(inspector: variableInspector!),
-              SystemInfoView(collector: systemInfoCollector),
-              ...extraTools.map((t) => t.builder(context)),
-            ],
-          ),
+        ),
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            NetworkListView(networkManager: widget.networkManager),
+            LogsListView(logManager: widget.logManager),
+            if (hasVariables)
+              VariablesListView(inspector: widget.variableInspector!),
+            SystemInfoView(collector: widget.systemInfoCollector),
+            ...widget.extraTools.map((t) => t.builder(context)),
+          ],
         ),
       ),
     );
