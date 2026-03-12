@@ -80,12 +80,18 @@ class _SystemInfoViewState extends State<SystemInfoView> {
                         maxLines: 3,
                       )
                     : null,
-                trailing: isLongValue
-                    ? CopyButton(text: entry.value)
-                    : Text(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isLongValue)
+                      Text(
                         entry.value,
                         style: const TextStyle(color: Colors.white, fontSize: 13),
                       ),
+                    const SizedBox(width: 8),
+                    CopyButton(text: entry.value),
+                  ],
+                ),
               );
             },
           ),
