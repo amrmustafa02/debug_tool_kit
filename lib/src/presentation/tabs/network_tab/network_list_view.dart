@@ -75,9 +75,7 @@ class _NetworkListViewState extends State<NetworkListView> {
                   entry: entries[index],
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => NetworkDetailView(entry: entries[index]),
-                    ),
+                    _darkPageRoute(NetworkDetailView(entry: entries[index])),
                   ),
                 ),
               );
@@ -144,6 +142,15 @@ class _NetworkListViewState extends State<NetworkListView> {
       ),
     );
   }
+}
+
+PageRoute<T> _darkPageRoute<T>(Widget page) {
+  return MaterialPageRoute<T>(
+    builder: (_) => Container(
+      color: const Color(0xFF1A1A1A),
+      child: page,
+    ),
+  );
 }
 
 class _RequestTile extends StatelessWidget {

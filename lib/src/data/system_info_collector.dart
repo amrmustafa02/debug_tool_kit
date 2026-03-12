@@ -6,8 +6,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class SystemInfoCollector {
   String? _environment;
+  String? _fcmToken;
 
   void setEnvironment(String env) => _environment = env;
+  void setFcmToken(String token) => _fcmToken = token;
 
   Future<Map<String, String>> collect() async {
     final info = <String, String>{};
@@ -54,6 +56,10 @@ class SystemInfoCollector {
 
     if (_environment != null) {
       info['Environment'] = _environment!;
+    }
+
+    if (_fcmToken != null) {
+      info['FCM Token'] = _fcmToken!;
     }
 
     info['Debug Mode'] = kDebugMode ? 'Yes' : 'No';

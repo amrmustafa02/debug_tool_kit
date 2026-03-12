@@ -66,16 +66,26 @@ class _SystemInfoViewState extends State<SystemInfoView> {
             separatorBuilder: (_, __) => Divider(color: Colors.grey[800], height: 1),
             itemBuilder: (context, index) {
               final entry = _info!.entries.elementAt(index);
+              final isLongValue = entry.value.length > 40;
               return ListTile(
                 dense: true,
                 title: Text(
                   entry.key,
                   style: TextStyle(color: Colors.grey[400], fontSize: 13),
                 ),
-                trailing: Text(
-                  entry.value,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
+                subtitle: isLongValue
+                    ? SelectableText(
+                        entry.value,
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        maxLines: 3,
+                      )
+                    : null,
+                trailing: isLongValue
+                    ? CopyButton(text: entry.value)
+                    : Text(
+                        entry.value,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                      ),
               );
             },
           ),

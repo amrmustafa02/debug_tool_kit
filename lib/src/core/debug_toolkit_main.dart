@@ -23,6 +23,9 @@ class DebugToolkit {
   static final List<DebugTool> _tools = [];
   static bool _initialized = false;
   static bool _showFloatingButton = true;
+  static bool _allowInReleaseMode = false;
+
+  static bool get _isEnabled => _allowInReleaseMode || kDebugMode;
 
   static LogManager get logManager {
     assert(_initialized, 'DebugToolkit.initialize() must be called first');
@@ -35,14 +38,16 @@ class DebugToolkit {
   }
 
   /// Initialize the debug toolkit. Call once in your app's main() or initState().
-  /// No-op in release mode.
+  /// No-op in release mode unless [allowInReleaseMode] is true.
   static void initialize({
     int maxLogs = 500,
     int maxRequests = 200,
     bool showFloatingButton = true,
+    bool allowInReleaseMode = false,
     String? environment,
   }) {
-    if (!kDebugMode) return;
+    _allowInReleaseMode = allowInReleaseMode;
+    if (!_isEnabled) return;
     if (_initialized) return;
 
     _showFloatingButton = showFloatingButton;
@@ -62,7 +67,7 @@ class DebugToolkit {
   /// Show the floating debug button overlay.
   /// Call this after the first frame (e.g., in a post-frame callback).
   static void showOverlay(BuildContext context) {
-    if (!kDebugMode || !_initialized || !_showFloatingButton) return;
+    if (!_isEnabled || !_initialized || !_showFloatingButton) return;
     if (_overlay != null) return;
 
     _overlay = DebugOverlay(onTap: () => showPanel(context));
@@ -71,7 +76,7 @@ class DebugToolkit {
 
   /// Hide the floating debug button.
   static void hideOverlay() {
-    if (!kDebugMode) return;
+    if (!_isEnabled) return;
     _overlay?.hide();
     _overlay = null;
   }
@@ -82,49 +87,59 @@ class DebugToolkit {
     LogLevel level = LogLevel.info,
     String? tag,
   }) {
-    if (!kDebugMode || !_initialized) return;
+    if (!_isEnabled || !_initialized) return;
     _logManager!.log(message, level: level, tag: tag);
   }
 
   /// Get a Dio interceptor that captures network calls.
   static Interceptor dioInterceptor() {
-    assert(kDebugMode && _initialized,
+    assert(_isEnabled && _initialized,
         'DebugToolkit.initialize() must be called first');
     return _dioInterceptor!;
   }
 
   /// Open the debug panel screen.
   static void showPanel(BuildContext context) {
-    if (!kDebugMode || !_initialized) return;
+    if (!_isEnabled || !_initialized) return;
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DebugPanelScreen(
-          networkManager: _networkManager!,
-          logManager: _logManager!,
-          systemInfoCollector: _systemInfoCollector!,
-          variableInspector: _variableInspector,
-          extraTools: _tools,
+        builder: (_) => Container(
+          color: const Color(0xFF1A1A1A),
+          child: DebugPanelScreen(
+            networkManager: _networkManager!,
+            logManager: _logManager!,
+            systemInfoCollector: _systemInfoCollector!,
+            variableInspector: _variableInspector,
+            extraTools: _tools,
+          ),
         ),
       ),
     );
   }
 
+  /// Set the FCM token to display in the System tab.
+  static void setFcmToken(String token) {
+    if (!_isEnabled || !_initialized) return;
+    _systemInfoCollector!.setFcmToken(token);
+  }
+
   /// Register a custom debug tool tab.
   static void registerTool(DebugTool tool) {
-    if (!kDebugMode) return;
+    if (!_isEnabled) return;
     _tools.add(tool);
   }
 
   /// Clean up resources.
   static void dispose() {
-    if (!kDebugMode) return;
+    if (!_isEnabled) return;
     hideOverlay();
     _logManager?.dispose();
     _networkManager?.dispose();
     _variableInspector?.dispose();
     _tools.clear();
     _initialized = false;
+    _allowInReleaseMode = false;
     _logManager = null;
     _networkManager = null;
     _systemInfoCollector = null;
