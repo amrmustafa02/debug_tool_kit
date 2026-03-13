@@ -27,13 +27,13 @@ class DebugToolkit {
 
   static bool get _isEnabled => _allowInReleaseMode || kDebugMode;
 
-  static LogManager get logManager {
-    assert(_initialized, 'DebugToolkit.initialize() must be called first');
+  static LogManager? get logManager {
+    if (!_isEnabled || !_initialized) return null;
     return _logManager!;
   }
 
-  static NetworkManager get networkManager {
-    assert(_initialized, 'DebugToolkit.initialize() must be called first');
+  static NetworkManager? get networkManager {
+    if (!_isEnabled || !_initialized) return null;
     return _networkManager!;
   }
 
@@ -92,9 +92,9 @@ class DebugToolkit {
   }
 
   /// Get a Dio interceptor that captures network calls.
+  /// Returns a no-op interceptor if the toolkit is disabled.
   static Interceptor dioInterceptor() {
-    assert(_isEnabled && _initialized,
-        'DebugToolkit.initialize() must be called first');
+    if (!_isEnabled || !_initialized) return Interceptor();
     return _dioInterceptor!;
   }
 
