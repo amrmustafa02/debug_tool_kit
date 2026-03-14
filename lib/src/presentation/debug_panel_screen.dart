@@ -80,7 +80,9 @@ class _DebugPanelScreenState extends State<DebugPanelScreen>
   Widget build(BuildContext context) {
     final hasVariables = widget.variableInspector != null;
 
-    return Theme(
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Theme(
       data: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF1A1A1A),
         appBarTheme: const AppBarTheme(
@@ -125,6 +127,7 @@ class _DebugPanelScreenState extends State<DebugPanelScreen>
             ...widget.extraTools.map((t) => t.builder(context)),
           ],
         ),
+      ),
       ),
     );
   }

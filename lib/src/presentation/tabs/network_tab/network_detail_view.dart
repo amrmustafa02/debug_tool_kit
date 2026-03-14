@@ -29,7 +29,9 @@ class NetworkDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Theme(
       data: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF1A1A1A),
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1A1A1A)),
@@ -55,6 +57,7 @@ class NetworkDetailView extends StatelessWidget {
             if (entry.error != null) _buildTextSection('Error', entry.error!),
           ],
         ),
+      ),
       ),
     );
   }
