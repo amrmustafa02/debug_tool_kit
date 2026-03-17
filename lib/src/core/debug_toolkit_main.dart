@@ -4,6 +4,7 @@ import 'package:debug_toolkit/src/domain/models/debug_tool.dart';
 import 'package:debug_toolkit/src/domain/models/log_entry.dart';
 import 'package:debug_toolkit/src/domain/services/log_manager.dart';
 import 'package:debug_toolkit/src/domain/services/network_manager.dart';
+import 'package:debug_toolkit/src/domain/services/storage_manager.dart';
 import 'package:debug_toolkit/src/domain/services/variable_inspector.dart';
 import 'package:debug_toolkit/src/presentation/debug_overlay.dart';
 import 'package:debug_toolkit/src/presentation/debug_panel_screen.dart';
@@ -19,6 +20,7 @@ class DebugToolkit {
   static SystemInfoCollector? _systemInfoCollector;
   static VariableInspector? _variableInspector;
   static DebugDioInterceptor? _dioInterceptor;
+  static StorageManager? _storageManager;
   static DebugOverlay? _overlay;
   static final List<DebugTool> _tools = [];
   static bool _initialized = false;
@@ -45,6 +47,7 @@ class DebugToolkit {
     bool showFloatingButton = true,
     bool allowInReleaseMode = false,
     String? environment,
+    String? storagePath,
   }) {
     _allowInReleaseMode = allowInReleaseMode;
     if (!_isEnabled) return;
@@ -59,6 +62,10 @@ class DebugToolkit {
 
     if (environment != null) {
       _systemInfoCollector?.setEnvironment(environment);
+    }
+
+    if (storagePath != null) {
+      _storageManager = StorageManager(rootPath: storagePath);
     }
 
     _initialized = true;
@@ -111,6 +118,7 @@ class DebugToolkit {
             logManager: _logManager!,
             systemInfoCollector: _systemInfoCollector!,
             variableInspector: _variableInspector,
+            storageManager: _storageManager,
             extraTools: _tools,
           ),
         ),
@@ -145,6 +153,7 @@ class DebugToolkit {
     _systemInfoCollector = null;
     _variableInspector = null;
     _dioInterceptor = null;
+    _storageManager = null;
     _overlay = null;
   }
 }

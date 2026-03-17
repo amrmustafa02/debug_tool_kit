@@ -2,9 +2,11 @@ import 'package:debug_toolkit/src/data/system_info_collector.dart';
 import 'package:debug_toolkit/src/domain/models/debug_tool.dart';
 import 'package:debug_toolkit/src/domain/services/log_manager.dart';
 import 'package:debug_toolkit/src/domain/services/network_manager.dart';
+import 'package:debug_toolkit/src/domain/services/storage_manager.dart';
 import 'package:debug_toolkit/src/domain/services/variable_inspector.dart';
 import 'package:debug_toolkit/src/presentation/tabs/logs_tab/logs_list_view.dart';
 import 'package:debug_toolkit/src/presentation/tabs/network_tab/network_list_view.dart';
+import 'package:debug_toolkit/src/presentation/tabs/storage_tab/storage_browser_view.dart';
 import 'package:debug_toolkit/src/presentation/tabs/system_tab/system_info_view.dart';
 import 'package:debug_toolkit/src/presentation/tabs/variables_tab/variables_list_view.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ class DebugPanelScreen extends StatefulWidget {
   final LogManager logManager;
   final SystemInfoCollector systemInfoCollector;
   final VariableInspector? variableInspector;
+  final StorageManager? storageManager;
   final List<DebugTool> extraTools;
 
   const DebugPanelScreen({
@@ -22,6 +25,7 @@ class DebugPanelScreen extends StatefulWidget {
     required this.logManager,
     required this.systemInfoCollector,
     this.variableInspector,
+    this.storageManager,
     this.extraTools = const [],
   });
 
@@ -43,12 +47,15 @@ class _DebugPanelScreenState extends State<DebugPanelScreen>
   void initState() {
     super.initState();
     final hasVariables = widget.variableInspector != null;
+    final hasStorage = widget.storageManager != null;
     _tabs = [
       _TabData(icon: Icons.wifi, label: 'Network'),
       _TabData(icon: Icons.article, label: 'Logs'),
       if (hasVariables)
         _TabData(icon: Icons.data_object, label: 'Variables'),
       _TabData(icon: Icons.info_outline, label: 'System'),
+      if (hasStorage)
+        _TabData(icon: Icons.folder_open, label: 'Storage'),
       ...widget.extraTools
           .map((t) => _TabData(icon: t.icon, label: t.name)),
     ];
@@ -124,6 +131,8 @@ class _DebugPanelScreenState extends State<DebugPanelScreen>
             if (hasVariables)
               VariablesListView(inspector: widget.variableInspector!),
             SystemInfoView(collector: widget.systemInfoCollector),
+            if (widget.storageManager != null)
+              StorageBrowserView(manager: widget.storageManager!),
             ...widget.extraTools.map((t) => t.builder(context)),
           ],
         ),
