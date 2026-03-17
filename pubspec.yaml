@@ -13,6 +13,8 @@ dependencies:
   device_info_plus: ^11.0.0
   package_info_plus: ^8.0.0
   vm_service: ">=14.0.0 <16.0.0"
+  video_player: ^2.8.0
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
