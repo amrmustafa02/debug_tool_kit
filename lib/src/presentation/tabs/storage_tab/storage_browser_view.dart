@@ -1,5 +1,6 @@
 import 'package:debug_toolkit/src/domain/models/file_entry.dart';
 import 'package:debug_toolkit/src/domain/services/storage_manager.dart';
+import 'package:debug_toolkit/src/presentation/tabs/storage_tab/media_preview_screen.dart';
 import 'package:debug_toolkit/src/presentation/widgets/debug_search_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -175,7 +176,13 @@ class _StorageBrowserViewState extends State<StorageBrowserView> {
             entry: entry,
             onTap: entry.isDirectory
                 ? () => _navigateToDirectory(entry.path)
-                : null,
+                : entry.mediaType.isPlayable
+                    ? () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MediaPreviewScreen(entry: entry),
+                          ),
+                        )
+                    : null,
           );
         },
       ),
